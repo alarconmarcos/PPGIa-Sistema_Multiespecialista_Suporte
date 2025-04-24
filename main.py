@@ -1,27 +1,44 @@
-#!/usr/bin/env python
+from blackboard.Bancada import Bancada
+from especialista.Atendente import Atendente
+from especialista.Triagem import Triagem
+from especialista.EngEletrico import EngEletrico
+from especialista.Suporte import Suporte
+from especialista.Tecnico import Tecnico
+from especialista.Estagiario import Estagiario
+from especialista.Eletricista import Eletricista
+from especialista.Testador import Testador
+from especialista.Finalizador import Finalizador
+from geradordetarefa.GeradorDeTarefa import GeradorDeTarefa
+from controlador.Controlador import Controlador
 
-from Bancada import Bancada
-from Controlador import Controlador
-from GeradorDeTarefa import GeradorDeTarefa
-from Atendente import Atendente
-from Estagiario import Estagiario
-from EngenheiroEletrico import EngenheiroEletrico
-from Suporte import Suporte
-from Tecnico import Tecnico
+# Inicializando a bancada
+bancada = Bancada()
 
-if __name__ == '__main__':
+gerador = GeradorDeTarefa(bancada)
+triagem = Triagem(gerador)
 
-    mesa_bancada = Bancada()
-    GeradorDeTarefa = GeradorDeTarefa(mesa_bancada)
+# Inicializando os especialistas
+especialistas = [Atendente(), Triagem(gerador), Tecnico(), Estagiario(), EngEletrico(), Eletricista(), Suporte(), Testador(), Finalizador()]
 
-    mesa_bancada.adicionaEspecialista( Atendente(mesa_bancada) )
-    mesa_bancada.adicionaEspecialista( Estagiario(mesa_bancada) )
-    mesa_bancada.adicionaEspecialista( EngenheiroEletrico(mesa_bancada) )
+# Registrando especialistas na bancada
+for esp in especialistas:
+    esp.Bancada = bancada
+    bancada.adicionaEspecialista(esp)
 
-    mesa_bancada.adicionaEspecialista( Suporte(mesa_bancada) )
-    mesa_bancada.adicionaEspecialista( Tecnico(mesa_bancada) )
+# Executa o sistema com o controlador
+controlador = Controlador(bancada, gerador)
+contribuicoes = controlador.loop()
 
-    contribuicoes = Controlador(mesa_bancada, GeradorDeTarefa, 120).loop()
-
-    for x in contribuicoes:
-        print(x)
+# Exibe o resultado
+print("\n--- RESULTADO FINAL ---")
+print("Progresso:", bancada.estadoCompartilhado['progresso'])
+print("Contribuições:")
+for x in contribuicoes:
+    try:
+        #
+        if x[0][1] is None:
+            continue
+    #Caso a estrutura não seja esperada, ignora
+    except (IndexError, TypeError):
+        continue
+    print(x)
